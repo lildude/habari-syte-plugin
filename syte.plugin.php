@@ -17,6 +17,89 @@ class Syte extends Plugin
 		
 	}
 	
+	/**
+     * Add the Configure, Authorize and De-Authorize options for the plugin
+     *
+     * @access public
+     * @param array $actions
+     * @param string $plugin_id
+     * @return array
+     */
+    public function filter_plugin_config( $actions, $plugin_id )
+    {
+		//$actions['authorize'] = _t( 'Authorize' );
+		$actions['configure'] = _t( 'Configure' );
+		//$actions['deauthorize'] = _t( 'De-Authorize' );
+		return $actions;
+    }
+	
+	/**
+     * Plugin UI - Displays the 'authorize' config option
+	 * 
+	 * @access public
+	 * @return void
+     */
+    public function action_plugin_ui_authorize()
+    {
+		
+	}
+	
+	/**
+     * Plugin UI - Displays the 'confirm' config option.
+     *
+     * @access public
+     * @return void
+     */
+	public function action_plugin_ui_confirm()
+	{
+		
+	}
+	
+	/**
+     * Plugin UI - Displays the 'deauthorize' config option.
+     *
+     * @access public
+     * @return void
+     */
+	public function action_plugin_ui_deauthorize() 
+	{
+		
+	}
+	
+	/**
+	 * Configure each component.
+	 * 
+	 * @todo: Come up with a way such that users don't have to register their own apps.
+	 */
+	public function action_plugin_ui_configure()
+	{
+		$ui = new FormUI( strtolower( __CLASS__ ) );
+		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
+			$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
+				for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
+				Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
+				pieces of the puzzle, the `Consumer key` and the `Consumer secret` make sure you save those.</p>
+
+<p>Next you will need your access tokens, on the bottom of that page there is a link called **Create my access token** click on that. 
+Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
+
+Once you have those four items from twitter you have to enter them below.</p>') );
+			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ) );
+			$fs->append( 'text', 'twitter_consumer_secret', __CLASS__ . '__twitter_consumer_secret', _t( 'Consumer Secret', 'syte' ) );
+			$fs->append( 'text', 'twitter_user_key', __CLASS__ . '__twitter_user_key', _t( 'User Key', 'syte' ) );
+			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ) );
+		
+		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
+		
+		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
+		
+
+		$ui->append( 'submit', 'save', _t( 'Save' ) );
+		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
+		$ui->on_success( array( $this, 'enable_integrations' ) );
+		$ui->out();
+	}
+	
 	// These need to go into the plugin as the theme can't provide them. :-(
 	public function filter_rewrite_rules( $rules )
 	{
@@ -104,9 +187,11 @@ class Syte extends Plugin
 	{
 		// These won't change
 		$client_id = '4390b77a28d64147bdaa39130d22c3d7';
-		$client_sec = '0285b652402f4148ab1405405c36a330';
+		$client_sec = '0285b652402f4148ab1405405c36a330';	// We don't want to include this is we can help it.
 		
-		
+		// TODO: We can probably grab the access token using the implicit grant method in a hidden iframe.
+		// http://stackoverflow.com/questions/2670626/get-url-from-iframe-and-update-hash-in-browser-url
+
 		/*
 		 * {"access_token":"45852486.4390b77.541c78c57e694dfda9379c5911580f68","user":{"username":"lildoodlil","bio":"","website":"http:\/\/colinseymour.co.uk","profile_picture":"http:\/\/images.instagram.com\/profiles\/anonymousUser.jpg","full_name":"Colin","id":"45852486"}}%    
 		 */
