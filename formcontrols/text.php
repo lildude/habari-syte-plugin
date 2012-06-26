@@ -5,14 +5,14 @@
 				'class', 'id' => 'name'
 			)
 		); ?>>
-	<label <?php
+	<span class="pct20"><label <?php
 		echo $control->parameter_map(
 			array(
 				'title' => array('label_title', 'title'),
 				'for' => 'field',
 			)
-		); ?>><?php echo $this->caption; ?></label>
-	<input <?php
+		); ?>><?php echo $this->caption; ?></label></span>
+	<span class="pct80"><input class="pct80" <?php
 		echo $control->parameter_map(
 			array(
 				'title' => array('control_title', 'title'),
@@ -24,6 +24,6 @@
 				'value' => Utils::htmlspecialchars( $value ),
 			)
 		);
-		?>>
+		?>></span>
 	<?php $control->errors_out( '<li>%s</li>', '<ul class="error">%s</ul>' ); ?>
 </div>

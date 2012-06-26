@@ -90,7 +90,9 @@ class Syte extends Plugin
 	 * @todo: Come up with a way such that users don't have to register their own apps.
 	 */
 	public function action_plugin_ui_configure()
-	{		
+	{	
+		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
+		
 		$ui = new FormUI( strtolower( __CLASS__ ) );
 	
 		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
@@ -104,22 +106,25 @@ class Syte extends Plugin
 Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
 
 Once you have those four items from twitter you have to enter them below.</p>') );
-			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ) );
-			$fs->append( 'text', 'twitter_consumer_secret', __CLASS__ . '__twitter_consumer_secret', _t( 'Consumer Secret', 'syte' ) );
-			$fs->append( 'text', 'twitter_user_key', __CLASS__ . '__twitter_user_key', _t( 'User Key', 'syte' ) );
-			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ) );
+			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ), 'syte_text' );
+			$fs->append( 'text', 'twitter_consumer_secret', __CLASS__ . '__twitter_consumer_secret', _t( 'Consumer Secret', 'syte' ), 'syte_text' );
+			$fs->append( 'text', 'twitter_user_key', __CLASS__ . '__twitter_user_key', _t( 'User Key', 'syte' ), 'syte_text' );
+			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ), 'syte_text' );
 		
-		$ui->append( 'checkbox', 'instagram_int', 'null:null', _t( 'Enable Instagram Integration' ) );
+		$ui->append( 'checkbox', 'instagram_int', __CLASS__ . '__enable_instagram', _t( 'Enable Instagram Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
-			$fs->append( 'static', 'instagram_auth', '
+			if ( Options::get( __CLASS__ . '__instagram_access_token' ) == '' ) {
+				$fs->append( 'static', 'instagram_auth', '
 					<p>Clicking the button below will open a new window and ask you to login to Instagram and authorize this application.  It will then redirect you to a bogus page. This is intentional until such time as I can find a way all browsers like to do this without you having to register your own app.  When that page loads, copy and paste everything after "response_token=" from the URL into the box below.</p>
-					<p><a href="https://instagram.com/oauth/authorize/?client_id=' . Syte::INSTAGRAM_CLIENT_ID . '&redirect_uri=http://127.0.0.1:8000/&response_type=token" target="_blank">Get Client Token</a></p>
+					<p><a style="margin-left:21%" href="https://instagram.com/oauth/authorize/?client_id=' . Syte::INSTAGRAM_CLIENT_ID . '&redirect_uri=http://127.0.0.1:8000/&response_type=token" target="_blank">Get Client Token</a></p>
 					');
-			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ) );
+			}
+			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ), 'syte_text' );
 		
-		$ui->append( 'checkbox', 'github_int', 'null:null', _t( 'Enable GitHub Integration' ) );
+		$ui->append( 'checkbox', 'github_int', __CLASS__ . '__enable_github', _t( 'Enable GitHub Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
-			$fs->append( 'text', 'github_username', __CLASS__ . '__github_username', _t( 'GitHub Username' ) );
+		
+			$fs->append( 'text', 'github_username', __CLASS__ . '__github_username', _t( 'GitHub Username' ), 'syte_text' );
 
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
 		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
