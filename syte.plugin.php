@@ -20,6 +20,22 @@ class Syte extends Plugin
 	}
 	
 	/**
+     * Add custom Javascript to "Configure" page
+     *
+     * This needs to be defined at the top for some reason.
+     *
+     * @access public
+     * @param object $theme
+     * @return void
+     */
+    public function action_admin_header( $theme )
+    {
+        if ( Controller::get_var( 'configure' ) == $this->plugin_id ) {
+            Stack::add( 'admin_header_javascript', URL::get_from_filesystem( __FILE__ ) . '/js/admin.js', 'syte-admin', 'jquery' );
+		}
+    }
+	
+	/**
      * Add the Configure, Authorize and De-Authorize options for the plugin
      *
      * @access public
@@ -74,13 +90,11 @@ class Syte extends Plugin
 	 * @todo: Come up with a way such that users don't have to register their own apps.
 	 */
 	public function action_plugin_ui_configure()
-	{
-		$this->add_template( 'syte_fieldset', dirname( __FILE__ ) . '/formcontrols/fieldset.php' );
-		
+	{		
 		$ui = new FormUI( strtolower( __CLASS__ ) );
-		$ui->append( 'checkbox', 'twitter_int', 'null:null', _t( 'Enable Twitter Integration' ) );
-		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ), 'syte_fieldset' );
-			$fs->class="hidden";
+	
+		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
 			$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
 				for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
 				Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
@@ -96,8 +110,7 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ) );
 		
 		$ui->append( 'checkbox', 'instagram_int', 'null:null', _t( 'Enable Instagram Integration' ) );
-		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ), 'syte_fieldset' );
-			$fs->class="hidden";
+		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
 			$fs->append( 'static', 'instagram_auth', '
 					<p>Clicking the button below will open a new window and ask you to login to Instagram and authorize this application.  It will then redirect you to a bogus page. This is intentional until such time as I can find a way all browsers like to do this without you having to register your own app.  When that page loads, copy and paste everything after "response_token=" from the URL into the box below.</p>
 					<p><a href="https://instagram.com/oauth/authorize/?client_id=' . Syte::INSTAGRAM_CLIENT_ID . '&redirect_uri=http://127.0.0.1:8000/&response_type=token" target="_blank">Get Client Token</a></p>
@@ -105,8 +118,7 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ) );
 		
 		$ui->append( 'checkbox', 'github_int', 'null:null', _t( 'Enable GitHub Integration' ) );
-		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ), 'syte_fieldset' );
-			$fs->class="hidden";
+		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
 			$fs->append( 'text', 'github_username', __CLASS__ . '__github_username', _t( 'GitHub Username' ) );
 
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
