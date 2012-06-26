@@ -2,9 +2,11 @@
 
 class Syte extends Plugin
 {
+	const INSTAGRAM_CLIENT_ID = '4390b77a28d64147bdaa39130d22c3d7';
+	
 	public function action_init()
 	{
-
+		$this->load_text_domain( 'syte' );
 	}
 	
 	public function action_plugin_activation( )
@@ -73,8 +75,12 @@ class Syte extends Plugin
 	 */
 	public function action_plugin_ui_configure()
 	{
+		$this->add_template( 'syte_fieldset', dirname( __FILE__ ) . '/formcontrols/fieldset.php' );
+		
 		$ui = new FormUI( strtolower( __CLASS__ ) );
-		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
+		$ui->append( 'checkbox', 'twitter_int', 'null:null', _t( 'Enable Twitter Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ), 'syte_fieldset' );
+			$fs->class="hidden";
 			$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
 				for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
 				Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
@@ -89,14 +95,23 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 			$fs->append( 'text', 'twitter_user_key', __CLASS__ . '__twitter_user_key', _t( 'User Key', 'syte' ) );
 			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ) );
 		
-		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
+		$ui->append( 'checkbox', 'instagram_int', 'null:null', _t( 'Enable Instagram Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ), 'syte_fieldset' );
+			$fs->class="hidden";
+			$fs->append( 'static', 'instagram_auth', '
+					<p>Clicking the button below will open a new window and ask you to login to Instagram and authorize this application.  It will then redirect you to a bogus page. This is intentional until such time as I can find a way all browsers like to do this without you having to register your own app.  When that page loads, copy and paste everything after "response_token=" from the URL into the box below.</p>
+					<p><a href="https://instagram.com/oauth/authorize/?client_id=' . Syte::INSTAGRAM_CLIENT_ID . '&redirect_uri=http://127.0.0.1:8000/&response_type=token" target="_blank">Get Client Token</a></p>
+					');
+			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ) );
 		
-		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
-		
+		$ui->append( 'checkbox', 'github_int', 'null:null', _t( 'Enable GitHub Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ), 'syte_fieldset' );
+			$fs->class="hidden";
+			$fs->append( 'text', 'github_username', __CLASS__ . '__github_username', _t( 'GitHub Username' ) );
 
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
 		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
-		$ui->on_success( array( $this, 'enable_integrations' ) );
+		//$ui->on_success( array( $this, 'enable_integrations' ) );
 		$ui->out();
 	}
 	
@@ -184,41 +199,33 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 	
 	// TODO: As Instagram are now owned by Twitter, I believe we can use the same methodology here.
 	public function action_handler_syte_instagram( $handler_vars )
-	{
-		// These won't change
-		$client_id = '4390b77a28d64147bdaa39130d22c3d7';
-		$client_sec = '0285b652402f4148ab1405405c36a330';	// We don't want to include this is we can help it.
+	{	
+		$access_token = Options::get( __CLASS__ . '__instagram_access_token' );
+		if ( $access_token != '' ) {
+			$access_parts = explode( '.', $access_token );
+			$user_id = $access_parts[0];
 		
-		// TODO: We can probably grab the access token using the implicit grant method in a hidden iframe.
-		// http://stackoverflow.com/questions/2670626/get-url-from-iframe-and-update-hash-in-browser-url
-
-		/*
-		 * {"access_token":"45852486.4390b77.541c78c57e694dfda9379c5911580f68","user":{"username":"lildoodlil","bio":"","website":"http:\/\/colinseymour.co.uk","profile_picture":"http:\/\/images.instagram.com\/profiles\/anonymousUser.jpg","full_name":"Colin","id":"45852486"}}%    
-		 */
-		// These will
-		$acc_tok = '45852486.4390b77.541c78c57e694dfda9379c5911580f68';
-		$user_id = '45852486';
+			$user = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/?access_token='.$access_token );
+			$user = json_decode( $user );
+			$user = json_encode( $user->data );
 		
-		// We don't actually need authentication to get public repos.
-		// https://api.instagram.com/v1/users/45852486?access_token=45852486.4390b77.541c78c57e694dfda9379c5911580f68
-		// Grab the user info
-		$user = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/?access_token='.$acc_tok );
-		$user = json_decode( $user );
-		$user = json_encode( $user->data );
-		
-		// Gram media info
-		if ( ! isset( $handler_vars['max_id'] ) ) {
-			$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$acc_tok );
+			// Gram media info
+			if ( ! isset( $handler_vars['max_id'] ) ) {
+				$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token );
+			} else {
+				$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token.'&max_id='.$handler_vars['max_id'] );
+			}
+			$media_uenc = json_decode( $media );
+			$media = json_encode( $media_uenc->data );
+			
+			// Pagination
+			$pagination = json_encode( $media_uenc->pagination );
+			
+			$r = '{"user":'.$user.', "media":'.$media.', "pagination":'.$pagination.'}';
+			
 		} else {
-			$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$acc_tok.'&max_id='.$handler_vars['max_id'] );
+			$r = '';
 		}
-		$media_uenc = json_decode( $media );
-		$media = json_encode( $media_uenc->data );
-		
-		// Pagination
-		$pagination = json_encode( $media_uenc->pagination );
-		
-		$r = '{"user":'.$user.', "media":'.$media.', "pagination":'.$pagination.'}';
 		echo $r;
 		exit();
 	}
