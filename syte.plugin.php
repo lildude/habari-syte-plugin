@@ -6,6 +6,11 @@ class Syte extends Plugin
 	
 	public function action_init()
 	{
+		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
+		$this->add_template( 'block.syte_tumbler', dirname( __FILE__ ) . '/blocks/block.tumbler.php' );
+		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
+		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
+		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
 		$this->load_text_domain( 'syte' );
 	}
 	
@@ -88,13 +93,14 @@ class Syte extends Plugin
 	 * Configure each component.
 	 * 
 	 * @todo: Come up with a way such that users don't have to register their own apps.
+	 * @todo: Validate that the fields are not empty when a section is active
 	 */
 	public function action_plugin_ui_configure()
 	{	
 		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		
 		$ui = new FormUI( strtolower( __CLASS__ ) );
-	
+		/**** Twitter ****/
 		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
 			$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
@@ -102,15 +108,17 @@ class Syte extends Plugin
 				Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
 				pieces of the puzzle, the `Consumer key` and the `Consumer secret` make sure you save those.</p>
 
-<p>Next you will need your access tokens, on the bottom of that page there is a link called **Create my access token** click on that. 
+<p>Next you will need your access tokens, on the bottom of that page there is a link called <strong>>Create my access token</strong> click on that. 
 Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
 
-Once you have those four items from twitter you have to enter them below.</p>') );
+<p>Once you have those four items from twitter you have to enter them below.</p>') );
+			$fs->append( 'text', 'twitter_url', __CLASS__ . '__twitter_url', _t( 'Twitter URL', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_consumer_secret', __CLASS__ . '__twitter_consumer_secret', _t( 'Consumer Secret', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_user_key', __CLASS__ . '__twitter_user_key', _t( 'User Key', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_user_secret', __CLASS__ . '__twitter_user_secret', _t( 'User Secret', 'syte' ), 'syte_text' );
 		
+		/**** Instagram ****/
 		$ui->append( 'checkbox', 'instagram_int', __CLASS__ . '__enable_instagram', _t( 'Enable Instagram Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
 			if ( Options::get( __CLASS__ . '__instagram_access_token' ) == '' ) {
@@ -120,16 +128,82 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 					');
 			}
 			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ), 'syte_text' );
-		
+			$fs->append( 'text', 'instagram_url', __CLASS__ . '__instagram_url', _t( 'Instagram URL' ), 'syte_text' );
+			
+		/**** Github ****/
 		$ui->append( 'checkbox', 'github_int', __CLASS__ . '__enable_github', _t( 'Enable GitHub Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
-		
-			$fs->append( 'text', 'github_username', __CLASS__ . '__github_username', _t( 'GitHub Username' ), 'syte_text' );
-
+			$fs->append( 'static', 'github_auth', '
+				<p>GitHub doesn\'t actually need authentication in order to use the API to view public repos, but for presentation purposes we need your Github profile URL.</p>
+				');
+			$fs->append( 'text', 'github_url', __CLASS__ . '__github_url', _t( 'Github URL' ), 'syte_text' );
+			
+		/**** Dribbble ****/
+		$ui->append( 'checkbox', 'dribbble_int', __CLASS__ . '__enable_dribbble', _t( 'Enable Dribble Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_dribbble', _t( 'Dribbble Authentication', 'syte' ) );
+			$fs->append( 'static', 'dribbble_auth', '
+				<p>Coming soon</p>
+				');
+			$fs->append( 'text', 'dribbble_url', __CLASS__ . '__dribbble_url', _t( 'Dribbble URL' ), 'syte_text' );	
+			
+		/**** Tumblr ****/
+		$ui->append( 'checkbox', 'tumblr_int', __CLASS__ . '__enable_tumblr', _t( 'Enable Tumblr Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_tumblr', _t( 'Tumblr Authentication', 'syte' ) );
+			$fs->append( 'static', 'tumblr_auth', '
+				<p>Coming soon</p>
+				');
+			$fs->append( 'text', 'tumblr_url', __CLASS__ . '__tumblr_url', _t( 'Tumblr URL' ), 'syte_text' );
+			
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
 		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
-		//$ui->on_success( array( $this, 'enable_integrations' ) );
+		$ui->on_success( array( $this, 'enable_integrations' ) );
 		$ui->out();
+	}
+	
+	/**
+	 * Add the blocks for those integrations that have been enabled to the active theme.
+	 * 
+	 * @todo We need to tie this plugin to the theme so these blocks are only added to the Syte theme.
+	 */
+	public function enable_integrations( $ui )
+	{
+		// Save our form before we do anything else.
+		$ui->save();
+		
+		// Get current active theme
+		$active_theme = Themes::get_active_data( true );
+		// Create a theme instance so we can query the configured blocks.
+		$new_theme = Themes::create();
+		// Get the currently configured blocks.
+		$blocks = $new_theme->get_blocks( 'sidebar', 0, $active_theme );
+		
+		// I think we need a has() function for blocks to make this easier.
+		// Parse the blocks and grab just the types into an array
+		$blocks_types = array();
+		foreach( $blocks as $block ) {
+			$block_types[] = $block->type;
+		}
+
+		// Check if we have the requested block enabled or not. If not, enable it.
+		// TODO: Do we want to remove the block if the config form has the field unchecked?
+		foreach( $ui->controls as $component ) {
+			if ( strpos( $component->name, '_int' ) ) {
+				$comp_name = explode( '_', $component->name );
+				$block_name = $comp_name[0];
+				if ( $component->value === true && !in_array( 'syte_' . $block_name, $block_types ) ) {
+					$block = new Block( array(
+						'title' => ucfirst( $block_name ),
+						'type' => 'syte_' . $block_name,
+						'data' => serialize( array( '_show_title' => 1, 'url' => Options::get( __CLASS__ . '__' . $block_name . '_url' ) ) )
+					) );
+					
+					$block->add_to_area( 'sidebar' );
+					Session::notice( _t( 'Added ' . ucfirst( $block_name ) . ' block to sidebar area.' ) );
+				}
+			}
+		}
+		
+
 	}
 	
 	// These need to go into the plugin as the theme can't provide them. :-(
@@ -178,21 +252,16 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 		return $rules;
 	}
 	
-	// TODO: I think I'm going to need to bring the blocks into the plugin or come up with a better way to configure the blocks so I can access them here.
 	public function action_handler_syte_twitter( $handler_vars )
 	{
 		require_once dirname( __FILE__ ) . '/lib/twitteroauth.php';
-		$url = "http://api.twitter.com/1/statuses/user_timeline.json?include_rts=false&exclude_replies=true&screen_name={$handler_vars['username']}";
+
+		$consumer_key = Options::get( __CLASS__ . '__twitter_consumer_key' );
+		$consumer_secret = Options::get( __CLASS__ . '__twitter_consumer_secret' );
+		$user_key = Options::get( __CLASS__ . '__twitter_user_key' );
+		$user_key_secret = Options::get( __CLASS__ . '__twitter_user_secret' );
 		
-		// These won't change
-		$con_key = 'Y304HN6NFTf3EN4evHiQ';
-		$con_sec = 'BkyMAGcBoS9oNTfjMCC4s0bvrKQNw3jDDB2mS3DPs';
-		
-		// These will
-		$acc_tok = '8812362-gekHnplD2HTSYFiocJ0BkHtOKT1zfvnHT5RpZYMJeY';
-		$acc_tok_sec = 'X03oRlAJDvHFsXFvzIJaJIibKdCrUoPNxijbm7Pwx9Y';
-		
-		$oauth = new TwitterOAuth( $con_key, $con_sec, $acc_tok, $acc_tok_sec );
+		$oauth = new TwitterOAuth( $consumer_key, $consumer_secret, $user_key, $user_key_secret );
 		$oauth->decode_json = false;
 		$resp = $oauth->get( 'statuses/user_timeline', array( 'screen_name' => $handler_vars['username'] ) );
 		
@@ -246,5 +315,109 @@ Once you have those four items from twitter you have to enter them below.</p>') 
 		echo $r;
 		exit();
 	}
+	
+	
+	/**
+	 * Add the blocks to the list of selectable blocks
+	 */
+	public function filter_block_list( $block_list )
+	{
+		$block_list[ 'syte_tumblr' ] = _t( 'Syte - Tumblr Integration', 'syte' );
+		$block_list[ 'syte_twitter' ] = _t( 'Syte - Twitter Integration', 'syte' );
+		$block_list[ 'syte_github' ] = _t( 'Syte - Github Integration', 'syte' );
+		$block_list[ 'syte_dribbble' ] = _t( 'Syte - dribbble Integration', 'syte' );
+		$block_list[ 'syte_instagram' ] = _t( 'Syte - Instagram Integration', 'syte' );
+		return $block_list;
+	}
+	
+	/**
+	 * Configure the tumblr block
+	 */
+	public function action_block_form_syte_tumblr( $form, $block )
+	{
+		
+		$form->append( 'text', 'tumbler_blog_url', $block, _t( 'Tumbler Blog URL', 'syte' ) );
+		$form->append( 'text', 'tumbler_api_key', $block, _t( 'Tumbler API Key', 'syte' ) );
+	}
+	
+	/**
+	 * Populate the tumblr block with some content
+	 **/
+	public function action_block_content_syte_tumblr( $block, $theme )
+	{
+		
+	}
+	
+	/**
+	 * Configure the twitter block
+	 * 
+	 * @todo: Implement Twitter authentication as used by the Twitter plugin. For the moment everything is hard coded.
+	 */
+	public function action_block_form_syte_twitter( $form, $block )
+	{
+		$form->append( 'text', 'url', $block, _t( 'Twitter URL', 'syte' ) );
+	}
+	
+	/**
+	 * Populate the twitter block with some content
+	 **/
+	public function action_block_content_syte_twitter( $block, $theme )
+	{
+	
+	}
+	
+	/**
+	 * Configure the github block
+	 * 
+	 * @todo: See if we can obtain this information like we can with Twitter
+	 */
+	public function action_block_form_syte_github( $form, $block )
+	{
+		$form->append( 'text', 'url', $block, _t( 'GitHub URL', 'syte' ) );
+	}
+	
+	/**
+	 * Populate the github block with some content
+	 **/
+	public function action_block_content_syte_github( $block, $theme )
+	{
+
+	}
+	
+	/**
+	 * Configure the dribbble block
+	 * 
+	 */
+	public function action_block_form_syte_dribbble( $form, $block )
+	{
+
+	}
+	
+	/**
+	 * Populate the dribbble block with some content
+	 **/
+	public function action_block_content_syte_dribbble( $block, $theme )
+	{
+		
+	}
+	
+	/**
+	 * Configure the instagram block
+	 * 
+	 * @todo: See if we can obtain this information like we can with Twitter
+	 */
+	public function action_block_form_syte_instagram( $form, $block )
+	{
+		$form->append( 'text', 'url', $block, _t( 'Instagram URL', 'syte' ) );
+	}
+	
+	/**
+	 * Populate the instagram block with some content
+	 **/
+	public function action_block_content_syte_instagram( $block, $theme )
+	{
+		
+	}
+	
 }
 ?>
