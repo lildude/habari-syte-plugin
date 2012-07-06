@@ -11,6 +11,7 @@ class Syte extends Plugin
 		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
 		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
+		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		$this->load_text_domain( 'syte' );
 	}
 	
@@ -97,8 +98,6 @@ class Syte extends Plugin
 	 */
 	public function action_plugin_ui_configure()
 	{	
-		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
-		
 		$ui = new FormUI( strtolower( __CLASS__ ) );
 		/**** Twitter ****/
 		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
@@ -316,7 +315,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		exit();
 	}
 	
-	
 	/**
 	 * Add the blocks to the list of selectable blocks
 	 */
@@ -419,5 +417,17 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		
 	}
 	
+	/**
+	 * Add a configuration option to set keywords
+	 */
+	public function filter_admin_option_items( $option_items )
+	{
+		$option_items[_t( 'Name & Tagline' )]['keywords'] = array(
+				'label' => _t( 'Site Keywords' ),
+				'type' => 'text',
+				'helptext' => _t( 'Comma separated list of default site keywords.' ),
+				);
+		return $option_items;
+	}
 }
 ?>
