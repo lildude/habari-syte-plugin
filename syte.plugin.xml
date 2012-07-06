@@ -7,4 +7,7 @@
 	<version>1.0</version>
 	<description><![CDATA[Plugin to accompany the Syte theme.  This is required as it supplies vital functionality which we can't deliver in the theme.]]></description>
 	<copyright>2012</copyright>
+	<provides>
+		<feature>Syte Plugin</feature>
+	</provides>
 </pluggable>
