@@ -97,7 +97,7 @@ class Syte extends Plugin
 					');
 			}
 			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ), 'syte_text' );
-			$fs->append( 'text', 'instagram_url', __CLASS__ . '__instagram_url', _t( 'Instagram URL' ), 'syte_text' );
+			$fs->append( 'hidden', 'instagram_url', __CLASS__ . '__instagram_url', _t( 'Instagram URL' ), 'syte_text' );
 			
 		/**** Github ****/
 		$ui->append( 'checkbox', 'github_int', __CLASS__ . '__enable_github', _t( 'Enable GitHub Integration' ) );
@@ -171,8 +171,6 @@ class Syte extends Plugin
 				}
 			}
 		}
-		
-
 	}
 	
 	// These need to go into the plugin as the theme can't provide them. :-(
@@ -341,14 +339,6 @@ class Syte extends Plugin
 	}
 	
 	/**
-	 * Populate the twitter block with some content
-	 **/
-	public function action_block_content_syte_twitter( $block, $theme )
-	{
-	
-	}
-	
-	/**
 	 * Configure the github block
 	 * 
 	 * @todo: See if we can obtain this information like we can with Twitter
@@ -356,14 +346,6 @@ class Syte extends Plugin
 	public function action_block_form_syte_github( $form, $block )
 	{
 		$form->append( 'text', 'url', $block, _t( 'GitHub URL', 'syte' ) );
-	}
-	
-	/**
-	 * Populate the github block with some content
-	 **/
-	public function action_block_content_syte_github( $block, $theme )
-	{
-
 	}
 	
 	/**
@@ -376,29 +358,12 @@ class Syte extends Plugin
 	}
 	
 	/**
-	 * Populate the dribbble block with some content
-	 **/
-	public function action_block_content_syte_dribbble( $block, $theme )
-	{
-		
-	}
-	
-	/**
 	 * Configure the instagram block
 	 * 
-	 * @todo: See if we can obtain this information like we can with Twitter
 	 */
 	public function action_block_form_syte_instagram( $form, $block )
 	{
 		$form->append( 'text', 'url', $block, _t( 'Instagram URL', 'syte' ) );
-	}
-	
-	/**
-	 * Populate the instagram block with some content
-	 **/
-	public function action_block_content_syte_instagram( $block, $theme )
-	{
-		
 	}
 	
 	/**
@@ -408,14 +373,6 @@ class Syte extends Plugin
 	public function action_block_form_syte_lastfm( $form, $block )
 	{
 		$form->append( 'text', 'url', $block, _t( 'Last.fm URL', 'syte' ) );
-	}
-	
-	/**
-	 * Populate the instagram block with some content
-	 **/
-	/*public function action_block_content_syte_lastfm( $block, $theme )
-	{
-		
 	}
 	
 	/**
