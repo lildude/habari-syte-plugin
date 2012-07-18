@@ -3,6 +3,7 @@
 class Syte extends Plugin
 {
 	const INSTAGRAM_CLIENT_ID = '4390b77a28d64147bdaa39130d22c3d7';
+	const LASTFM_API_KEY = 'e258bec284029b2586ae001fcd42673e';
 	
 	public function action_init()
 	{
@@ -11,6 +12,7 @@ class Syte extends Plugin
 		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
 		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
+		$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
 		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		$this->load_text_domain( 'syte' );
 	}
@@ -137,6 +139,15 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				');
 			$fs->append( 'text', 'github_url', __CLASS__ . '__github_url', _t( 'Github URL' ), 'syte_text' );
 			
+		/**** Last.fm ****/
+		$ui->append( 'checkbox', 'lastfm_int', __CLASS__ . '__enable_lastfm', _t( 'Enable last.fm Integration' ) );
+		$fs = $ui->append( 'fieldset', 'fs_lastfm', _t( 'last.fm Authentication', 'syte' ) );
+			$fs->append( 'static', 'lastfm_auth', '
+				<p>The Last.fm integration does not make any authenticated calls so setting it up only requires that you register an application with Last.fm and get an API key.</p>
+				<p>To get an API key simply follow the <a href="http://www.last.fm/api" target="_blank">Getting started instructions</a>.  You can then view your API Key from <a href="http://www.last.fm/api/account" target="_blank">your api account page</a> and enter it below.</p>
+				');
+			$fs->append( 'text', 'lastfm_url', __CLASS__ . '__lastfm_url', _t( 'last.fm URL' ), 'syte_text' );	
+			
 		/**** Dribbble ****/
 		$ui->append( 'checkbox', 'dribbble_int', __CLASS__ . '__enable_dribbble', _t( 'Enable Dribble Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_dribbble', _t( 'Dribbble Authentication', 'syte' ) );
@@ -152,6 +163,9 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				<p>Coming soon</p>
 				');
 			$fs->append( 'text', 'tumblr_url', __CLASS__ . '__tumblr_url', _t( 'Tumblr URL' ), 'syte_text' );
+			
+
+
 			
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
 		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
@@ -247,6 +261,16 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				'priority' => 7,
 				'is_active' => 1,
 		));
+		
+		$rules[] = new RewriteRule(array(
+				'name' => 'syte_lastfm',
+				'parse_regex' => '%^lastfm/(?P<username>\w+)?/?$%i',
+				'build_str' => 'lastfm/{$username}',
+				'handler' => 'UserThemeHandler',
+				'action' => 'syte_lastfm',
+				'priority' => 7,
+				'is_active' => 1,
+		));
 
 		return $rules;
 	}
@@ -282,7 +306,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		exit();
 	}
 	
-	// TODO: As Instagram are now owned by Twitter, I believe we can use the same methodology here.
 	public function action_handler_syte_instagram( $handler_vars )
 	{	
 		$access_token = Options::get( __CLASS__ . '__instagram_access_token' );
@@ -315,6 +338,16 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		exit();
 	}
 	
+	public function action_handler_syte_lastfm( $handler_vars )
+	{
+		$r = '{"user_info":';
+		$r .= RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
+		$r .= ', "recenttracks":';
+		$r .= RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
+		$r .= '}';
+		echo $r;
+		exit();
+	}
 	/**
 	 * Add the blocks to the list of selectable blocks
 	 */
@@ -325,6 +358,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$block_list[ 'syte_github' ] = _t( 'Syte - Github Integration', 'syte' );
 		$block_list[ 'syte_dribbble' ] = _t( 'Syte - dribbble Integration', 'syte' );
 		$block_list[ 'syte_instagram' ] = _t( 'Syte - Instagram Integration', 'syte' );
+		$block_list[ 'syte_lastfm' ] = _t( 'Syte - Last.fm Integration', 'syte' );
 		return $block_list;
 	}
 	
@@ -413,6 +447,14 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 	 * Populate the instagram block with some content
 	 **/
 	public function action_block_content_syte_instagram( $block, $theme )
+	{
+		
+	}
+	
+	/**
+	 * Populate the instagram block with some content
+	 **/
+	public function action_block_content_syte_lastfm( $block, $theme )
 	{
 		
 	}
