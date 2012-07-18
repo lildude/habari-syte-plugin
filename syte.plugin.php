@@ -9,7 +9,6 @@ class Syte extends Plugin
 	{
 		// TODO: These aren't actually used at the moment, but are needed to stop Habari reporting errors.
 		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
-		$this->add_template( 'block.syte_tumbler', dirname( __FILE__ ) . '/blocks/block.tumbler.php' );
 		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
 		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
@@ -114,7 +113,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				<p>To get an API key simply follow the <a href="http://www.last.fm/api" target="_blank">Getting started instructions</a>.  You can then view your API Key from <a href="http://www.last.fm/api/account" target="_blank">your api account page</a> and enter it below.</p>
 				');
 			$fs->append( 'text', 'lastfm_url', __CLASS__ . '__lastfm_url', _t( 'last.fm URL' ), 'syte_text' );	
-			
+				
 		/**** Dribbble ****/
 		$ui->append( 'checkbox', 'dribbble_int', __CLASS__ . '__enable_dribbble', _t( 'Enable Dribble Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_dribbble', _t( 'Dribbble Authentication', 'syte' ) );
@@ -122,17 +121,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				<p>Coming soon</p>
 				');
 			$fs->append( 'text', 'dribbble_url', __CLASS__ . '__dribbble_url', _t( 'Dribbble URL' ), 'syte_text' );	
-			
-		/**** Tumblr ****/
-		$ui->append( 'checkbox', 'tumblr_int', __CLASS__ . '__enable_tumblr', _t( 'Enable Tumblr Integration' ) );
-		$fs = $ui->append( 'fieldset', 'fs_tumblr', _t( 'Tumblr Authentication', 'syte' ) );
-			$fs->append( 'static', 'tumblr_auth', '
-				<p>Coming soon</p>
-				');
-			$fs->append( 'text', 'tumblr_url', __CLASS__ . '__tumblr_url', _t( 'Tumblr URL' ), 'syte_text' );
-			
-
-
 			
 		$ui->append( 'submit', 'save', _t( 'Save' ) );
 		$ui->set_option( 'success_message', _t( 'Options saved', 'syte' ) );
@@ -320,31 +308,12 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 	 */
 	public function filter_block_list( $block_list )
 	{
-		$block_list[ 'syte_tumblr' ] = _t( 'Syte - Tumblr Integration', 'syte' );
 		$block_list[ 'syte_twitter' ] = _t( 'Syte - Twitter Integration', 'syte' );
 		$block_list[ 'syte_github' ] = _t( 'Syte - Github Integration', 'syte' );
 		$block_list[ 'syte_dribbble' ] = _t( 'Syte - dribbble Integration', 'syte' );
 		$block_list[ 'syte_instagram' ] = _t( 'Syte - Instagram Integration', 'syte' );
 		$block_list[ 'syte_lastfm' ] = _t( 'Syte - Last.fm Integration', 'syte' );
 		return $block_list;
-	}
-	
-	/**
-	 * Configure the tumblr block
-	 */
-	public function action_block_form_syte_tumblr( $form, $block )
-	{
-		
-		$form->append( 'text', 'tumbler_blog_url', $block, _t( 'Tumbler Blog URL', 'syte' ) );
-		$form->append( 'text', 'tumbler_api_key', $block, _t( 'Tumbler API Key', 'syte' ) );
-	}
-	
-	/**
-	 * Populate the tumblr block with some content
-	 **/
-	public function action_block_content_syte_tumblr( $block, $theme )
-	{
-		
 	}
 	
 	/**
