@@ -70,15 +70,17 @@ class Syte extends Plugin
 		/**** Twitter ****/
 		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
-			$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
-				for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
-				Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
-				pieces of the puzzle, the `Consumer key` and the `Consumer secret` make sure you save those.</p>
+			if ( Options::get( __CLASS__ . '__twitter_user_secret' == '' ) ) {
+				$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
+					for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
+					Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
+					pieces of the puzzle, the `Consumer key` and the `Consumer secret` make sure you save those.</p>
 
-<p>Next you will need your access tokens, on the bottom of that page there is a link called <strong>>Create my access token</strong> click on that. 
-Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
+					<p>Next you will need your access tokens, on the bottom of that page there is a link called <strong>>Create my access token</strong> click on that. 
+					Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
 
-<p>Once you have those four items from twitter you have to enter them below.</p>') );
+					<p>Once you have those four items from twitter you have to enter them below.</p>') );
+			}
 			$fs->append( 'text', 'twitter_url', __CLASS__ . '__twitter_url', _t( 'Twitter URL', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_consumer_secret', __CLASS__ . '__twitter_consumer_secret', _t( 'Consumer Secret', 'syte' ), 'syte_text' );
@@ -101,7 +103,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$ui->append( 'checkbox', 'github_int', __CLASS__ . '__enable_github', _t( 'Enable GitHub Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
 			$fs->append( 'static', 'github_auth', '
-				<p>GitHub doesn\'t actually need authentication in order to use the API to view public repos, but for presentation purposes we need your Github profile URL.</p>
+				<p>GitHub doesn\'t actually need authentication in order to use the API to view public repos, so all we need your Github profile URL.</p>
 				');
 			$fs->append( 'text', 'github_url', __CLASS__ . '__github_url', _t( 'Github URL' ), 'syte_text' );
 			
@@ -109,8 +111,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$ui->append( 'checkbox', 'lastfm_int', __CLASS__ . '__enable_lastfm', _t( 'Enable last.fm Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_lastfm', _t( 'last.fm Authentication', 'syte' ) );
 			$fs->append( 'static', 'lastfm_auth', '
-				<p>The Last.fm integration does not make any authenticated calls so setting it up only requires that you register an application with Last.fm and get an API key.</p>
-				<p>To get an API key simply follow the <a href="http://www.last.fm/api" target="_blank">Getting started instructions</a>.  You can then view your API Key from <a href="http://www.last.fm/api/account" target="_blank">your api account page</a> and enter it below.</p>
+				<p>No authentication is needed for Last.fm, just enter your Last.fm URL below.</p>
 				');
 			$fs->append( 'text', 'lastfm_url', __CLASS__ . '__lastfm_url', _t( 'last.fm URL' ), 'syte_text' );	
 				
@@ -118,7 +119,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$ui->append( 'checkbox', 'dribbble_int', __CLASS__ . '__enable_dribbble', _t( 'Enable Dribble Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_dribbble', _t( 'Dribbble Authentication', 'syte' ) );
 			$fs->append( 'static', 'dribbble_auth', '
-				<p>Coming soon</p>
+				<p>No authentication is needed for Dribbble, just enter your Dribble URL below.</p>
 				');
 			$fs->append( 'text', 'dribbble_url', __CLASS__ . '__dribbble_url', _t( 'Dribbble URL' ), 'syte_text' );	
 			
@@ -226,6 +227,16 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 				'priority' => 7,
 				'is_active' => 1,
 		));
+		
+		$rules[] = new RewriteRule(array(
+				'name' => 'syte_dribbble',
+				'parse_regex' => '%^dribbble/(?P<username>\w+)?/?$%i',
+				'build_str' => 'dribbble/{$username}',
+				'handler' => 'UserThemeHandler',
+				'action' => 'syte_dribbble',
+				'priority' => 7,
+				'is_active' => 1,
+		));
 
 		return $rules;
 	}
@@ -244,7 +255,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$resp = $oauth->get( 'statuses/user_timeline', array( 'screen_name' => $handler_vars['username'] ) );
 		
 		echo $resp;
-		exit();
 	}
 	
 	public function action_handler_syte_github( $handler_vars )
@@ -258,7 +268,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$r .= RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'].'/repos' );
 		$r .= '}';
 		echo $r;
-		exit();
 	}
 	
 	public function action_handler_syte_instagram( $handler_vars )
@@ -290,7 +299,6 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 			$r = '';
 		}
 		echo $r;
-		exit();
 	}
 	
 	public function action_handler_syte_lastfm( $handler_vars )
@@ -301,8 +309,14 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 		$r .= RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
 		$r .= '}';
 		echo $r;
-		exit();
 	}
+	
+	public function action_handler_syte_dribbble( $handler_vars )
+	{
+		$r = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
+		echo $r;
+	}
+	
 	/**
 	 * Add the blocks to the list of selectable blocks
 	 */
@@ -358,7 +372,7 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 	 */
 	public function action_block_form_syte_dribbble( $form, $block )
 	{
-
+		$form->append( 'text', 'url', $block, _t( 'Dribbble URL', 'syte' ) );
 	}
 	
 	/**
