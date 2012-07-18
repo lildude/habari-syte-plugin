@@ -7,12 +7,14 @@ class Syte extends Plugin
 	
 	public function action_init()
 	{
+		// TODO: These aren't actually used at the moment, but are needed to stop Habari reporting errors.
 		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
 		$this->add_template( 'block.syte_tumbler', dirname( __FILE__ ) . '/blocks/block.tumbler.php' );
 		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
 		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
 		$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
+		
 		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		$this->load_text_domain( 'syte' );
 	}
@@ -452,9 +454,18 @@ Once you are done you will be given the other two pieces of the puzzle, the `Acc
 	}
 	
 	/**
+	 * Configure the last.fm block
+	 * 
+	 */
+	public function action_block_form_syte_lastfm( $form, $block )
+	{
+		$form->append( 'text', 'url', $block, _t( 'Last.fm URL', 'syte' ) );
+	}
+	
+	/**
 	 * Populate the instagram block with some content
 	 **/
-	public function action_block_content_syte_lastfm( $block, $theme )
+	/*public function action_block_content_syte_lastfm( $block, $theme )
 	{
 		
 	}
