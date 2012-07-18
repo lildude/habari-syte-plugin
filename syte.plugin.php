@@ -55,44 +55,9 @@ class Syte extends Plugin
      */
     public function filter_plugin_config( $actions, $plugin_id )
     {
-		//$actions['authorize'] = _t( 'Authorize' );
 		$actions['configure'] = _t( 'Configure' );
-		//$actions['deauthorize'] = _t( 'De-Authorize' );
 		return $actions;
     }
-	
-	/**
-     * Plugin UI - Displays the 'authorize' config option
-	 * 
-	 * @access public
-	 * @return void
-     */
-    public function action_plugin_ui_authorize()
-    {
-		
-	}
-	
-	/**
-     * Plugin UI - Displays the 'confirm' config option.
-     *
-     * @access public
-     * @return void
-     */
-	public function action_plugin_ui_confirm()
-	{
-		
-	}
-	
-	/**
-     * Plugin UI - Displays the 'deauthorize' config option.
-     *
-     * @access public
-     * @return void
-     */
-	public function action_plugin_ui_deauthorize() 
-	{
-		
-	}
 	
 	/**
 	 * Configure each component.
