@@ -159,15 +159,22 @@ class Syte extends Plugin
 			if ( strpos( $component->name, '_int' ) ) {
 				$comp_name = explode( '_', $component->name );
 				$block_name = $comp_name[0];
-				if ( $component->value === true && !in_array( 'syte_' . $block_name, $block_types ) ) {
-					$block = new Block( array(
-						'title' => ucfirst( $block_name ),
-						'type' => 'syte_' . $block_name,
-						'data' => serialize( array( '_show_title' => 1, 'url' => Options::get( __CLASS__ . '__' . $block_name . '_url' ) ) )
-					) );
-					
-					$block->add_to_area( 'sidebar' );
-					Session::notice( _t( 'Added ' . ucfirst( $block_name ) . ' block to sidebar area.' ) );
+				if ( $component->value === true ) {
+					// If we don't have a block already, add it.
+					if ( !in_array( 'syte_' . $block_name, $block_types ) ) {
+						$block = new Block( array(
+							'title' => ucfirst( $block_name ),
+							'type' => 'syte_' . $block_name,
+							'data' => serialize( array( '_show_title' => 1, 'url' => Options::get( __CLASS__ . '__' . $block_name . '_url' ) ) )
+						) );
+
+						$block->add_to_area( 'sidebar' );
+						Session::notice( _t( 'Added ' . ucfirst( $block_name ) . ' block to sidebar area.' ) );
+					} 
+					// If we do have a block, just update it's url as this is all that is likely to have changed.
+					else {
+						
+					}
 				}
 			}
 		}
@@ -374,6 +381,15 @@ class Syte extends Plugin
 	{
 		$form->append( 'text', 'url', $block, _t( 'Last.fm URL', 'syte' ) );
 	}
+	
+	/**
+	 * Populate the twitter block with some content
+	 */
+	public function action_block_content_syte_lastfm( $block, $theme )
+	{
+		
+	}
+
 	
 	/**
 	 * Add a configuration option to set keywords
