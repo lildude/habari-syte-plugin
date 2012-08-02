@@ -256,10 +256,13 @@ class Syte extends Plugin
 		$user_key_secret = Options::get( __CLASS__ . '__twitter_user_secret' );
 		
 		$oauth = new TwitterOAuth( $consumer_key, $consumer_secret, $user_key, $user_key_secret );
-		$oauth->decode_json = false;
+		$oauth->decode_json = true;
 		$resp = $oauth->get( 'statuses/user_timeline', array( 'screen_name' => $handler_vars['username'] ) );
 		
-		echo $resp;
+		list( $block, $new_theme ) = $this->get_block( 'syte_twitter' );
+		$block->tweets = $resp;
+		
+		echo $block->fetch($new_theme);
 	}
 	
 	public function action_handler_syte_github( $handler_vars )
@@ -313,7 +316,7 @@ class Syte extends Plugin
 
 		// Remove the # the results place in fron of the '#text' object
 		$user_info = json_decode( str_replace('#text', 'text', $user_info ) );
-		list( $block, $new_theme ) = $this->get_block( 'lastfm' );
+		list( $block, $new_theme ) = $this->get_block( 'syte_lastfm' );
 		$block->user_info = $user_info->user;
 				
 		$tracks = json_decode( str_replace( array('#text', '@attr'), array('text', 'attr'), $tracks ) );
@@ -401,6 +404,14 @@ class Syte extends Plugin
 		return $option_items;
 	}
 	
+	/**
+	 * Gets a specific block and a corresponding theme object
+	 * 
+	 * This should probably be a function built into Habari. Would need enhancing first.
+	 * 
+	 * @param String $name The name of the block
+	 * @return Array Array containing the block object and a new theme object
+	 */
 	public function get_block( $name )
 	{
 		// Get current active theme
@@ -409,15 +420,28 @@ class Syte extends Plugin
 		$new_theme = Themes::create();
 		// Get the currently configured blocks.
 		$blocks = $new_theme->get_blocks( 'sidebar', 0, $active_theme );
-		// Find the lastfm block
 		
 		foreach( $blocks as $block ) {
-			if ( $block->type == 'syte_' . $name ) {
+			if ( $block->type == $name ) {
 				return array( $block, $new_theme );
 			} else {
 				continue;
 			}
 		}
+	}
+	
+	/**
+	 * Replace URLs, hash tags and twitter names with links.
+	 * 
+	 * @param String $str The string to linkify
+	 */
+	public static function linkify( $str )
+	{
+		$str = preg_replace( '/(https?:\/\/\S+)/i', "<a href=\"$1\">$1</a>", $str );
+		$str = preg_replace( '/(^|) @(\w+)/i', " <a href=\"http://twitter.com/$2\">@$2</a>", $str );
+		$str = preg_replace( '/(^|) #(\w+)/i', " <a href=\"https://twitter.com/#!/search/%23$2\">#$2</a>", $str );
+		
+		return $str;
 	}
 }
 ?>
