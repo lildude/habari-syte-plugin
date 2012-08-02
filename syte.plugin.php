@@ -171,7 +171,7 @@ class Syte extends Plugin
 						$block->add_to_area( 'sidebar' );
 						Session::notice( _t( 'Added ' . ucfirst( $block_name ) . ' block to sidebar area.' ) );
 					} 
-					// If we do have a block, just update it's url as this is all that is likely to have changed.
+					// TODO: If we do have a block, just update it's url as this is all that is likely to have changed.
 					else {
 						
 					}
@@ -308,12 +308,18 @@ class Syte extends Plugin
 	
 	public function action_handler_syte_lastfm( $handler_vars )
 	{
-		$r = '{"user_info":';
-		$r .= RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
-		$r .= ', "recenttracks":';
-		$r .= RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
-		$r .= '}';
-		echo $r;
+		$user_info = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
+		$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
+
+		// Remove the # the results place in fron of the '#text' object
+		$user_info = json_decode( str_replace('#text', 'text', $user_info ) );
+		list( $block, $new_theme ) = $this->get_block( 'lastfm' );
+		$block->user_info = $user_info->user;
+				
+		$tracks = json_decode( str_replace( array('#text', '@attr'), array('text', 'attr'), $tracks ) );
+		$block->recent_tracks = $tracks->recenttracks->track;
+		
+		echo $block->fetch($new_theme);
 	}
 	
 	public function action_handler_syte_dribbble( $handler_vars )
@@ -383,15 +389,6 @@ class Syte extends Plugin
 	}
 	
 	/**
-	 * Populate the twitter block with some content
-	 */
-	public function action_block_content_syte_lastfm( $block, $theme )
-	{
-		
-	}
-
-	
-	/**
 	 * Add a configuration option to set keywords
 	 */
 	public function filter_admin_option_items( $option_items )
@@ -402,6 +399,25 @@ class Syte extends Plugin
 				'helptext' => _t( 'Comma separated list of default site keywords.' ),
 				);
 		return $option_items;
+	}
+	
+	public function get_block( $name )
+	{
+		// Get current active theme
+		$active_theme = Themes::get_active_data( true );
+		// Create a theme instance so we can query the configured blocks.
+		$new_theme = Themes::create();
+		// Get the currently configured blocks.
+		$blocks = $new_theme->get_blocks( 'sidebar', 0, $active_theme );
+		// Find the lastfm block
+		
+		foreach( $blocks as $block ) {
+			if ( $block->type == 'syte_' . $name ) {
+				return array( $block, $new_theme );
+			} else {
+				continue;
+			}
+		}
 	}
 }
 ?>
