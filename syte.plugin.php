@@ -324,8 +324,16 @@ class Syte extends Plugin
 	
 	public function action_handler_syte_dribbble( $handler_vars )
 	{
-		$r = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
-		echo $r;
+		$user = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] );
+		
+		$shots = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
+		$shots = json_decode( $shots );
+		
+		list( $block, $new_theme ) = $this->get_block( 'syte_dribbble' );
+		$block->user = json_decode( $user );
+		$block->shots = $shots->shots;
+
+		echo $block->fetch( $new_theme );
 	}
 	
 	/**
