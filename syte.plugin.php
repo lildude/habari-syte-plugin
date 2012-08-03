@@ -285,11 +285,24 @@ class Syte extends Plugin
 			$access_parts = explode( '.', $access_token );
 			$user_id = $access_parts[0];
 		
+			// Grab user info
 			$user = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/?access_token='.$access_token );
 			$user = json_decode( $user );
-			$user = json_encode( $user->data );
-		
-			// Gram media info
+			
+			list( $block, $new_theme ) = $this->get_block( 'syte_instagram' );
+			
+			$block->user = $user->data;
+			
+			// Grab media info
+			$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token );
+			$media = json_decode( $media );
+			
+			$block->media = $media->data;
+			
+			echo $block->fetch($new_theme);
+			
+			/* TODO: See if we can implement pagination. If not, not the end of the world.
+			// Grab media info
 			if ( ! isset( $handler_vars['max_id'] ) ) {
 				$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token );
 			} else {
@@ -304,9 +317,9 @@ class Syte extends Plugin
 			$r = '{"user":'.$user.', "media":'.$media.', "pagination":'.$pagination.'}';
 			
 		} else {
-			$r = '';
+			$r = '';*/
 		}
-		echo $r;
+		//echo $r;
 	}
 	
 	public function action_handler_syte_lastfm( $handler_vars )
