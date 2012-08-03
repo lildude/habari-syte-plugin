@@ -262,20 +262,23 @@ class Syte extends Plugin
 		list( $block, $new_theme ) = $this->get_block( 'syte_twitter' );
 		$block->tweets = $resp;
 		
-		echo $block->fetch($new_theme);
+		echo $block->fetch( $new_theme );
 	}
 	
 	public function action_handler_syte_github( $handler_vars )
 	{
 		// We don't actually need authentication to get public repos.
 		// Grab the user info
-		$r = '{"user":';
-		$r .= RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'] );
-		$r .= ', "repos":';
+		$user = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'] );
+		
 		// Grab the repos info
-		$r .= RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'].'/repos' );
-		$r .= '}';
-		echo $r;
+		$repos = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'].'/repos' );
+
+		list( $block, $new_theme ) = $this->get_block( 'syte_github' );
+		$block->user = json_decode( $user );
+		$block->repos = json_decode( $repos );
+
+		echo $block->fetch( $new_theme );
 	}
 	
 	public function action_handler_syte_instagram( $handler_vars )
@@ -299,27 +302,8 @@ class Syte extends Plugin
 			
 			$block->media = $media->data;
 			
-			echo $block->fetch($new_theme);
-			
-			/* TODO: See if we can implement pagination. If not, not the end of the world.
-			// Grab media info
-			if ( ! isset( $handler_vars['max_id'] ) ) {
-				$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token );
-			} else {
-				$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token.'&max_id='.$handler_vars['max_id'] );
-			}
-			$media_uenc = json_decode( $media );
-			$media = json_encode( $media_uenc->data );
-			
-			// Pagination
-			$pagination = json_encode( $media_uenc->pagination );
-			
-			$r = '{"user":'.$user.', "media":'.$media.', "pagination":'.$pagination.'}';
-			
-		} else {
-			$r = '';*/
+			echo $block->fetch( $new_theme );
 		}
-		//echo $r;
 	}
 	
 	public function action_handler_syte_lastfm( $handler_vars )
@@ -328,14 +312,14 @@ class Syte extends Plugin
 		$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
 
 		// Remove the # the results place in fron of the '#text' object
-		$user_info = json_decode( str_replace('#text', 'text', $user_info ) );
+		$user_info = json_decode( str_replace( '#text', 'text', $user_info ) );
 		list( $block, $new_theme ) = $this->get_block( 'syte_lastfm' );
 		$block->user_info = $user_info->user;
 				
-		$tracks = json_decode( str_replace( array('#text', '@attr'), array('text', 'attr'), $tracks ) );
+		$tracks = json_decode( str_replace( array( '#text', '@attr' ), array( 'text', 'attr' ), $tracks ) );
 		$block->recent_tracks = $tracks->recenttracks->track;
 		
-		echo $block->fetch($new_theme);
+		echo $block->fetch( $new_theme );
 	}
 	
 	public function action_handler_syte_dribbble( $handler_vars )
