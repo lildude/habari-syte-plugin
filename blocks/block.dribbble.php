@@ -1,4 +1,4 @@
-<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } ?>
+<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } if (! isset($content->user) ) { echo "<!--- Foo -->"; return; } ?>
 <div class="profile dribbble modal fade-large" id="dribbble-profile">
   <div class="profile-info">
     <button class="close" data-dismiss="modal">×</button>

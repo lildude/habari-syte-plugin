@@ -7,12 +7,12 @@ class Syte extends Plugin
 	
 	public function action_init()
 	{
-		// TODO: These aren't actually used at the moment, but are needed to stop Habari reporting errors.
-		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
-		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
+		// TODO: We need to load these so they appear in the sidebar, but doing so here grinds things to a halt and fills the logs with errors.
+		//$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
+		//$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
-		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
-		$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
+		//$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
+		//$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
 		
 		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		$this->load_text_domain( 'syte' );
@@ -325,7 +325,7 @@ class Syte extends Plugin
 	public function action_handler_syte_dribbble( $handler_vars )
 	{
 		$user = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] );
-		
+		//Utils::debug(json_decode($user)); return;
 		$shots = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
 		$shots = json_decode( $shots );
 		
@@ -409,6 +409,32 @@ class Syte extends Plugin
 		return $option_items;
 	}
 	
+	
+	public function action_block_content_syte_dribbble( $block, $theme )
+	{
+		
+	}
+	
+	public function action_block_content_syte_twitter( $block, $theme )
+	{
+		
+	}
+	
+	public function action_block_content_syte_instagram( $block, $theme )
+	{
+		
+	}
+	
+	public function action_block_content_syte_github( $block, $theme )
+	{
+		
+	}
+	
+	public function action_block_content_syte_lastfm( $block, $theme )
+	{
+		
+	}
+	
 	/**
 	 * Gets a specific block and a corresponding theme object
 	 * 
@@ -419,6 +445,7 @@ class Syte extends Plugin
 	 */
 	public function get_block( $name )
 	{
+		
 		// Get current active theme
 		$active_theme = Themes::get_active_data( true );
 		// Create a theme instance so we can query the configured blocks.
