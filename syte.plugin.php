@@ -7,7 +7,6 @@ class Syte extends Plugin
 	
 	public function action_init()
 	{
-		// TODO: We need to load these so they appear in the sidebar, but doing so here grinds things to a halt and fills the logs with errors.
 		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
 		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
@@ -61,8 +60,6 @@ class Syte extends Plugin
 	/**
 	 * Configure each component.
 	 * 
-	 * @todo: Come up with a way such that users don't have to register their own apps.
-	 * @todo: Validate that the fields are not empty when a section is active
 	 */
 	public function action_plugin_ui_configure()
 	{	
@@ -154,7 +151,6 @@ class Syte extends Plugin
 		}
 
 		// Check if we have the requested block enabled or not. If not, enable it.
-		// TODO: Do we want to remove the block if the config form has the field unchecked?
 		foreach( $ui->controls as $component ) {
 			if ( strpos( $component->name, '_int' ) ) {
 				$comp_name = explode( '_', $component->name );
@@ -175,6 +171,8 @@ class Syte extends Plugin
 					else {
 						
 					}
+				} else {
+					// TODO: remove block if deactivated
 				}
 			}
 		}
@@ -352,7 +350,6 @@ class Syte extends Plugin
 	/**
 	 * Configure the twitter block
 	 * 
-	 * @todo: Implement Twitter authentication as used by the Twitter plugin. For the moment everything is hard coded.
 	 */
 	public function action_block_form_syte_twitter( $form, $block )
 	{
@@ -362,7 +359,6 @@ class Syte extends Plugin
 	/**
 	 * Configure the github block
 	 * 
-	 * @todo: See if we can obtain this information like we can with Twitter
 	 */
 	public function action_block_form_syte_github( $form, $block )
 	{
@@ -408,33 +404,7 @@ class Syte extends Plugin
 				);
 		return $option_items;
 	}
-	
-	
-	public function action_block_content_syte_dribbble( $block, $theme )
-	{
 		
-	}
-	
-	public function action_block_content_syte_twitter( $block, $theme )
-	{
-		
-	}
-	
-	public function action_block_content_syte_instagram( $block, $theme )
-	{
-		
-	}
-	
-	public function action_block_content_syte_github( $block, $theme )
-	{
-		
-	}
-	
-	public function action_block_content_syte_lastfm( $block, $theme )
-	{
-		
-	}
-	
 	/**
 	 * Gets a specific block and a corresponding theme object
 	 * 
