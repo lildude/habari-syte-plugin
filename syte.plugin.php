@@ -68,15 +68,15 @@ class Syte extends Plugin
 		$ui->append( 'checkbox', 'twitter_int', __CLASS__ . '__enable_twitter', _t( 'Enable Twitter Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_twitter', _t( 'Twitter Authentication', 'syte' ) );
 			if ( Options::get( __CLASS__ . '__twitter_user_secret' == '' ) ) {
-				$fs->append( 'static', 'twitter_help', _t( '<p>To get started create a new application on twitter 
+				$fs->append( 'static', 'twitter_help', '<p>To get started, create a new application on Twitter 
 					for your website by going to <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a>. 
-					Once you are done creating your application you will be taken to your application page on twitter, there you already have two 
+					Once you are done creating your application you will be taken to your application page on Twitter, there you already have two 
 					pieces of the puzzle, the `Consumer key` and the `Consumer secret` make sure you save those.</p>
 
-					<p>Next you will need your access tokens, on the bottom of that page there is a link called <strong>>Create my access token</strong> click on that. 
+					<p>Next you will need your access tokens. On the bottom of that page there is a link called <strong>>Create my access token</strong> click on that. 
 					Once you are done you will be given the other two pieces of the puzzle, the `Access token` and the `Access token secret` make sure you save those as well.</p>
 
-					<p>Once you have those four items from twitter you have to enter them below.</p>') );
+					<p>Once you have those four items from Twitter, enter them below.</p>' );
 			}
 			$fs->append( 'text', 'twitter_url', __CLASS__ . '__twitter_url', _t( 'Twitter URL', 'syte' ), 'syte_text' );
 			$fs->append( 'text', 'twitter_consumer_key', __CLASS__ . '__twitter_consumer_key', _t( 'Consumer Key', 'syte' ), 'syte_text' );
@@ -89,18 +89,21 @@ class Syte extends Plugin
 		$fs = $ui->append( 'fieldset', 'fs_instagram', _t( 'Instagram Authentication', 'syte' ) );
 			if ( Options::get( __CLASS__ . '__instagram_access_token' ) == '' ) {
 				$fs->append( 'static', 'instagram_auth', '
-					<p>Clicking the button below will open a new window and ask you to login to Instagram and authorize this application.  It will then redirect you to a bogus page. This is intentional until such time as I can find a way all browsers like to do this without you having to register your own app.  When that page loads, copy and paste everything after "response_token=" from the URL into the box below.</p>
+					<p>Clicking the button below will open a new window and ask you to login to Instagram and authorize this application.  It will then redirect you to a bogus page. 
+					This is intentional until such time as I can find a way all browsers like to do this without you having to register your own app.  
+					When that page loads, copy and paste everything after "response_token=" from the URL into the box below.</p>
 					<p><a style="margin-left:21%" href="https://instagram.com/oauth/authorize/?client_id=' . Syte::INSTAGRAM_CLIENT_ID . '&redirect_uri=http://127.0.0.1:8000/&response_type=token" target="_blank">Get Client Token</a></p>
 					');
 			}
 			$fs->append( 'text', 'instagram_access_token', __CLASS__ . '__instagram_access_token', _t( 'Access Token', 'syte' ), 'syte_text' );
+			// Instagram doesn't actually offer a profile page yet, but one day it might.
 			$fs->append( 'hidden', 'instagram_url', __CLASS__ . '__instagram_url', _t( 'Instagram URL' ), 'syte_text' );
 			
 		/**** Github ****/
 		$ui->append( 'checkbox', 'github_int', __CLASS__ . '__enable_github', _t( 'Enable GitHub Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_github', _t( 'GitHub Authentication', 'syte' ) );
 			$fs->append( 'static', 'github_auth', '
-				<p>GitHub doesn\'t actually need authentication in order to use the API to view public repos, so all we need your Github profile URL.</p>
+				<p>GitHub doesn\'t need authentication in order to use the API to view public repos, so all we need your Github profile URL.</p>
 				');
 			$fs->append( 'text', 'github_url', __CLASS__ . '__github_url', _t( 'Github URL' ), 'syte_text' );
 			
@@ -108,7 +111,7 @@ class Syte extends Plugin
 		$ui->append( 'checkbox', 'lastfm_int', __CLASS__ . '__enable_lastfm', _t( 'Enable last.fm Integration' ) );
 		$fs = $ui->append( 'fieldset', 'fs_lastfm', _t( 'last.fm Authentication', 'syte' ) );
 			$fs->append( 'static', 'lastfm_auth', '
-				<p>No authentication is needed for Last.fm, just enter your Last.fm URL below.</p>
+				<p>No authentication is needed for Last.fm, just enter your Last.fm profile URL below.</p>
 				');
 			$fs->append( 'text', 'lastfm_url', __CLASS__ . '__lastfm_url', _t( 'last.fm URL' ), 'syte_text' );	
 				
@@ -129,21 +132,20 @@ class Syte extends Plugin
 	/**
 	 * Add the blocks for those integrations that have been enabled to the active theme.
 	 * 
-	 * @todo We need to tie this plugin to the theme so these blocks are only added to the Syte theme.
 	 */
 	public function enable_integrations( $ui )
 	{
 		// Save our form before we do anything else.
 		$ui->save();
 		
+		// Get the blocks: I think we need a has() function for blocks to make this easier.
 		// Get current active theme
 		$active_theme = Themes::get_active_data( true );
 		// Create a theme instance so we can query the configured blocks.
 		$new_theme = Themes::create();
 		// Get the currently configured blocks.
 		$blocks = $new_theme->get_blocks( 'sidebar', 0, $active_theme );
-		
-		// I think we need a has() function for blocks to make this easier.
+
 		// Parse the blocks and grab just the types into an array
 		$blocks_types = array();
 		foreach( $blocks as $block ) {
@@ -167,20 +169,26 @@ class Syte extends Plugin
 						$block->add_to_area( 'sidebar' );
 						Session::notice( _t( 'Added ' . ucfirst( $block_name ) . ' block to sidebar area.' ) );
 					} 
-					// TODO: If we do have a block, just update it's url as this is all that is likely to have changed.
+					// TODO: If we do have a block, just update its url as this is all that is likely to have changed.
 					else {
 						
 					}
-				} else {
+				} 
+				else {
 					// TODO: remove block if deactivated
 				}
 			}
 		}
 	}
 	
-	// These need to go into the plugin as the theme can't provide them. :-(
+	/**
+	 * Add the rewrite rules required for the "ajax" functionality
+	 * 
+	 * These need to go into the plugin as the theme can't provide them. :-(
+	 */
 	public function filter_rewrite_rules( $rules )
 	{
+		// twitter/username
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_twitter',
 				'parse_regex' => '%^twitter/(?P<username>\w+)/?$%i',
@@ -190,7 +198,7 @@ class Syte extends Plugin
 				'priority' => 7,
 				'is_active' => 1,
 		));
-		
+		// github/username
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_github',
 				'parse_regex' => '%^github/(?P<username>\w+)/?$%i',
@@ -200,7 +208,7 @@ class Syte extends Plugin
 				'priority' => 7,
 				'is_active' => 1,
 		));
-		
+		// instagram
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_instagram',
 				'parse_regex' => '%^instagram/?$%i',
@@ -210,7 +218,7 @@ class Syte extends Plugin
 				'priority' => 5,
 				'is_active' => 1,
 		));
-		
+		// instagram/number
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_instagram',
 				'parse_regex' => '%^instagram/(?P<max_id>\w+)?/?$%i',
@@ -220,7 +228,7 @@ class Syte extends Plugin
 				'priority' => 7,
 				'is_active' => 1,
 		));
-		
+		// lastfm/username
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_lastfm',
 				'parse_regex' => '%^lastfm/(?P<username>\w+)?/?$%i',
@@ -230,7 +238,7 @@ class Syte extends Plugin
 				'priority' => 7,
 				'is_active' => 1,
 		));
-		
+		// dribbble/username
 		$rules[] = new RewriteRule(array(
 				'name' => 'syte_dribbble',
 				'parse_regex' => '%^dribbble/(?P<username>\w+)?/?$%i',
@@ -244,6 +252,10 @@ class Syte extends Plugin
 		return $rules;
 	}
 	
+	/**
+	 * Handle the twitter/username rewrite rule
+	 * 
+	 */
 	public function action_handler_syte_twitter( $handler_vars )
 	{
 		require_once dirname( __FILE__ ) . '/lib/twitteroauth.php';
@@ -263,9 +275,12 @@ class Syte extends Plugin
 		echo $block->fetch( $new_theme );
 	}
 	
+	/**
+	 * Handle the github/username rewrite rule
+	 * 
+	 */
 	public function action_handler_syte_github( $handler_vars )
 	{
-		// We don't actually need authentication to get public repos.
 		// Grab the user info
 		$user = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'] );
 		
@@ -279,6 +294,10 @@ class Syte extends Plugin
 		echo $block->fetch( $new_theme );
 	}
 	
+	/**
+	 * Handle the instagram rewrite rule
+	 * 
+	 */
 	public function action_handler_syte_instagram( $handler_vars )
 	{	
 		$access_token = Options::get( __CLASS__ . '__instagram_access_token' );
@@ -304,12 +323,16 @@ class Syte extends Plugin
 		}
 	}
 	
+	/**
+	 * Handle the lastfm/username rewrite rule
+	 * 
+	 */
 	public function action_handler_syte_lastfm( $handler_vars )
 	{
 		$user = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
 		$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
 
-		// Remove the # the results place in fron of the '#text' object
+		// Remove the # the results place in front of the '#text' object
 		$user = json_decode( str_replace( '#text', 'text', $user ) );
 		list( $block, $new_theme ) = $this->get_block( 'syte_lastfm' );
 		$block->user = $user->user;
@@ -320,10 +343,13 @@ class Syte extends Plugin
 		echo $block->fetch( $new_theme );
 	}
 	
+	/**
+	 * Handle the dribbble/username rewrite rule
+	 * 
+	 */
 	public function action_handler_syte_dribbble( $handler_vars )
 	{
 		$user = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] );
-		//Utils::debug(json_decode($user)); return;
 		$shots = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
 		$shots = json_decode( $shots );
 		
@@ -415,7 +441,6 @@ class Syte extends Plugin
 	 */
 	public function get_block( $name )
 	{
-		
 		// Get current active theme
 		$active_theme = Themes::get_active_data( true );
 		// Create a theme instance so we can query the configured blocks.
@@ -426,7 +451,8 @@ class Syte extends Plugin
 		foreach( $blocks as $block ) {
 			if ( $block->type == $name ) {
 				return array( $block, $new_theme );
-			} else {
+			} 
+			else {
 				continue;
 			}
 		}
@@ -442,7 +468,6 @@ class Syte extends Plugin
 		$str = preg_replace( '/(https?:\/\/\S+)/i', "<a href=\"$1\">$1</a>", $str );
 		$str = preg_replace( '/(^|) @(\w+)/i', " <a href=\"http://twitter.com/$2\">@$2</a>", $str );
 		$str = preg_replace( '/(^|) #(\w+)/i', " <a href=\"https://twitter.com/#!/search/%23$2\">#$2</a>", $str );
-		
 		return $str;
 	}
 }
