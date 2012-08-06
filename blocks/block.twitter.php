@@ -1,4 +1,6 @@
-<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } ?>
+<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); }
+if (! isset( $content->tweets ) ) { echo "<!--- Ignore Me: This is a fudge cos I haven't found a better way of loading block content in a theme via AJAX and declare it in the theme -->"; return; } ?>
+
 <div class="profile twitter modal fade" id="twitter-profile">
 
   <div class="profile-info">

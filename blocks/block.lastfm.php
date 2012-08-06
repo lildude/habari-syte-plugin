@@ -1,30 +1,31 @@
-<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } ?>
+<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } 
+if (! isset( $content->user ) ) { echo "<!--- Ignore Me: This is a fudge cos I haven't found a better way of loading block content in a theme via AJAX and declare it in the theme -->"; return; } ?>
 
 <div class="profile lastfm modal fade" id="lastfm-profile">
   <div class="profile-info">
     <button class="close" data-dismiss="modal">×</button>
-    <?php if ( $content->user_info->image[1]->text ) : ?>
-    <a href="<?php echo $content->user_info->url; ?>" class="profile-avatar">
-      <img src="<?php echo $content->user_info->image[1]->text; ?>" alt="<?php echo $content->user_info->name; ?>" />
+    <?php if ( $content->user->image[1]->text ) : ?>
+    <a href="<?php echo $content->user->url; ?>" class="profile-avatar">
+      <img src="<?php echo $content->user->image[1]->text; ?>" alt="<?php echo $content->user->name; ?>" />
     </a>
     <?php endif; ?>
     <div class="profile-name">
-	<?php if ( $content->user_info->realname ) : ?>
-      <h2><a href="<?php echo $content->user_info->url; ?>"><?php echo $content->user_info->realname; ?></a></h2>
+	<?php if ( $content->user->realname ) : ?>
+      <h2><a href="<?php echo $content->user->url; ?>"><?php echo $content->user->realname; ?></a></h2>
 	<?php endif; ?>
-      <h3><a href="<?php echo $content->user_info->url; ?>"><?php echo $content->user_info->name; ?></a></h3>
+      <h3><a href="<?php echo $content->user->url; ?>"><?php echo $content->user->name; ?></a></h3>
     </div>
     <p class="profile-location-url">
-      <?php if ( $content->user_info->country ) : ?><span>Country - <?php echo $content->user_info->country; ?></span><?php endif; ?>
+      <?php if ( $content->user->country ) : ?><span>Country - <?php echo $content->user->country; ?></span><?php endif; ?>
     </p>
   </div>
   <ul class="profile-stats">
-    <li><a href="<?php echo $content->user_info->url; ?>"><strong><?php echo $content->user_info->playcount; ?></strong> plays</a></li>
-    <li><a href="<?php echo $content->user_info->url; ?>/playlists"><strong><?php echo $content->user_info->playlists; ?></strong> playlists</a></li>
-    <li><a href="<?php echo $content->user_info->url; ?>"><strong><?php echo date( 'm/d/Y', $content->user_info->registered->unixtime ); ?></strong> registered</a></li>
+    <li><a href="<?php echo $content->user->url; ?>"><strong><?php echo $content->user->playcount; ?></strong> plays</a></li>
+    <li><a href="<?php echo $content->user->url; ?>/playlists"><strong><?php echo $content->user->playlists; ?></strong> playlists</a></li>
+    <li><a href="<?php echo $content->user->url; ?>"><strong><?php echo date( 'm/d/Y', $content->user->registered->unixtime ); ?></strong> registered</a></li>
   </ul>
   <div class="profile-info-footer">
-    <a href="<?php echo $content->user_info->url; ?>" class="btn">View Last.fm Profile</a>
+    <a href="<?php echo $content->user->url; ?>" class="btn">View Last.fm Profile</a>
   </div>
 
   <ul class="profile-tracks">

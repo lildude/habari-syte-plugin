@@ -1,4 +1,5 @@
-<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } if (! isset($content->user) ) { echo "<!--- Foo -->"; return; } ?>
+<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); } 
+if (! isset( $content->user ) ) { echo "<!--- Ignore Me: This is a fudge cos I haven't found a better way of loading block content in a theme via AJAX and declare it in the theme -->"; return; } ?>
 <div class="profile dribbble modal fade-large" id="dribbble-profile">
   <div class="profile-info">
     <button class="close" data-dismiss="modal">×</button>

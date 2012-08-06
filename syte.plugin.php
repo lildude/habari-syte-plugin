@@ -8,11 +8,11 @@ class Syte extends Plugin
 	public function action_init()
 	{
 		// TODO: We need to load these so they appear in the sidebar, but doing so here grinds things to a halt and fills the logs with errors.
-		//$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
-		//$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
+		$this->add_template( 'block.syte_twitter', dirname( __FILE__ ) . '/blocks/block.twitter.php' );
+		$this->add_template( 'block.syte_github', dirname( __FILE__ ) . '/blocks/block.github.php' );
 		$this->add_template( 'block.syte_dribbble', dirname( __FILE__ ) . '/blocks/block.dribbble.php' );
-		//$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
-		//$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
+		$this->add_template( 'block.syte_instagram', dirname( __FILE__ ) . '/blocks/block.instagram.php' );
+		$this->add_template( 'block.syte_lastfm', dirname( __FILE__ ) . '/blocks/block.lastfm.php' );
 		
 		$this->add_template( 'syte_text', dirname( __FILE__ ) . '/formcontrols/text.php' );
 		$this->load_text_domain( 'syte' );
@@ -308,13 +308,13 @@ class Syte extends Plugin
 	
 	public function action_handler_syte_lastfm( $handler_vars )
 	{
-		$user_info = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
+		$user = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
 		$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
 
 		// Remove the # the results place in fron of the '#text' object
-		$user_info = json_decode( str_replace( '#text', 'text', $user_info ) );
+		$user = json_decode( str_replace( '#text', 'text', $user ) );
 		list( $block, $new_theme ) = $this->get_block( 'syte_lastfm' );
-		$block->user_info = $user_info->user;
+		$block->user = $user->user;
 				
 		$tracks = json_decode( str_replace( array( '#text', '@attr' ), array( 'text', 'attr' ), $tracks ) );
 		$block->recent_tracks = $tracks->recenttracks->track;
