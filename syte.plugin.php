@@ -257,17 +257,25 @@ class Syte extends Plugin
 	 * 
 	 */
 	public function action_handler_syte_twitter( $handler_vars )
-	{
-		require_once dirname( __FILE__ ) . '/lib/twitteroauth.php';
+	{		
+		if ( Cache::has( 'syte_twitter' ) ) {
+			$resp = Cache::get( 'syte_twitter' );
+		} 
+		else {
+			require_once dirname( __FILE__ ) . '/lib/twitteroauth.php';
 
-		$consumer_key = Options::get( __CLASS__ . '__twitter_consumer_key' );
-		$consumer_secret = Options::get( __CLASS__ . '__twitter_consumer_secret' );
-		$user_key = Options::get( __CLASS__ . '__twitter_user_key' );
-		$user_key_secret = Options::get( __CLASS__ . '__twitter_user_secret' );
+			$consumer_key = Options::get( __CLASS__ . '__twitter_consumer_key' );
+			$consumer_secret = Options::get( __CLASS__ . '__twitter_consumer_secret' );
+			$user_key = Options::get( __CLASS__ . '__twitter_user_key' );
+			$user_key_secret = Options::get( __CLASS__ . '__twitter_user_secret' );
+
+			$oauth = new TwitterOAuth( $consumer_key, $consumer_secret, $user_key, $user_key_secret );
+			$oauth->decode_json = true;
+			$resp = $oauth->get( 'statuses/user_timeline', array( 'screen_name' => $handler_vars['username'] ) );
 		
-		$oauth = new TwitterOAuth( $consumer_key, $consumer_secret, $user_key, $user_key_secret );
-		$oauth->decode_json = true;
-		$resp = $oauth->get( 'statuses/user_timeline', array( 'screen_name' => $handler_vars['username'] ) );
+			// Cache the response for 60 seconds to keep from hammering API endpoints
+			Cache::set( 'syte_twitter', $resp, 60 );
+		}
 		
 		list( $block, $new_theme ) = $this->get_block( 'syte_twitter' );
 		$block->tweets = $resp;
@@ -281,12 +289,18 @@ class Syte extends Plugin
 	 */
 	public function action_handler_syte_github( $handler_vars )
 	{
-		// Grab the user info
-		$user = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'] );
+		if ( Cache::has( 'syte_github' ) ) {
+			extract( Cache::get( 'syte_github' ) );
+		}
+		else {
+			// Grab the user info
+			$user = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'] );
+			// Grab the repos info
+			$repos = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'].'/repos' );
 		
-		// Grab the repos info
-		$repos = RemoteRequest::get_contents( 'https://api.github.com/users/'.$handler_vars['username'].'/repos' );
-
+			// Cache the response for 60 seconds to keep from hammering API endpoints
+			Cache::set( 'syte_github', array( 'user' => $user, 'repos' => $repos ), 60 );
+		}
 		list( $block, $new_theme ) = $this->get_block( 'syte_github' );
 		$block->user = json_decode( $user );
 		$block->repos = json_decode( $repos );
@@ -300,27 +314,29 @@ class Syte extends Plugin
 	 */
 	public function action_handler_syte_instagram( $handler_vars )
 	{	
-		$access_token = Options::get( __CLASS__ . '__instagram_access_token' );
-		if ( $access_token != '' ) {
+		if ( Cache::has( 'syte_instagram' ) ) {
+			extract( Cache::get( 'syte_instagram' ) );
+		}
+		else {
+			$access_token = Options::get( __CLASS__ . '__instagram_access_token' );
 			$access_parts = explode( '.', $access_token );
 			$user_id = $access_parts[0];
-		
 			// Grab user info
 			$user = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/?access_token='.$access_token );
 			$user = json_decode( $user );
-			
-			list( $block, $new_theme ) = $this->get_block( 'syte_instagram' );
-			
-			$block->user = $user->data;
-			
 			// Grab media info
 			$media = RemoteRequest::get_contents( 'https://api.instagram.com/v1/users/'.$user_id.'/media/recent/?access_token='.$access_token );
 			$media = json_decode( $media );
-			
-			$block->media = $media->data;
-			
-			echo $block->fetch( $new_theme );
+
+			// Cache the response for 60 seconds to keep from hammering API endpoints
+			Cache::set( 'syte_instagram', array( 'user' => $user, 'media' => $media ), 60 );
 		}
+
+		list( $block, $new_theme ) = $this->get_block( 'syte_instagram' );
+		$block->user = $user->data;
+		$block->media = $media->data;
+
+		echo $block->fetch( $new_theme );
 	}
 	
 	/**
@@ -329,15 +345,23 @@ class Syte extends Plugin
 	 */
 	public function action_handler_syte_lastfm( $handler_vars )
 	{
-		$user = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
-		$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
+		if ( Cache::has_group( 'syte_lastfm' ) ) {
+			extract( Cache::get_group( 'syte_lastfm' ) );
+		}
+		else {
+			$user = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json');
+			$tracks = RemoteRequest::get_contents( 'http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=' . $handler_vars['username'] . '&api_key=' . Syte::LASTFM_API_KEY . '&format=json' );
 
-		// Remove the # the results place in front of the '#text' object
-		$user = json_decode( str_replace( '#text', 'text', $user ) );
+			// Remove the # the results place in front of the '#text' object
+			$user = json_decode( str_replace( '#text', 'text', $user ) );
+			$tracks = json_decode( str_replace( array( '#text', '@attr' ), array( 'text', 'attr' ), $tracks ) );
+
+			// Cache the response for 60 seconds to keep from hammering API endpoints
+			Cache::set( 'syte_lastfm', array( 'user' => $user, 'tracks' => $tracks ), 60 );
+		}
+		
 		list( $block, $new_theme ) = $this->get_block( 'syte_lastfm' );
 		$block->user = $user->user;
-				
-		$tracks = json_decode( str_replace( array( '#text', '@attr' ), array( 'text', 'attr' ), $tracks ) );
 		$block->recent_tracks = $tracks->recenttracks->track;
 		
 		echo $block->fetch( $new_theme );
@@ -349,12 +373,21 @@ class Syte extends Plugin
 	 */
 	public function action_handler_syte_dribbble( $handler_vars )
 	{
-		$user = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] );
-		$shots = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
-		$shots = json_decode( $shots );
+		if ( Cache::has( 'syte_dribbble' ) ) {
+			extract( Cache::get( 'syte_dribbble' ) );
+		}
+		else {
+			$user = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] );
+			$user = json_decode( $user );
+			$shots = RemoteRequest::get_contents( 'http://api.dribbble.com/players/' . $handler_vars['username'] . '/shots' );
+			$shots = json_decode( $shots );
+			
+			// Cache the response for 60 seconds to keep from hammering API endpoints
+			Cache::set( 'syte_dribbble', array( 'user' => $user, 'shots' => $shots ), 60 );
+		}
 		
 		list( $block, $new_theme ) = $this->get_block( 'syte_dribbble' );
-		$block->user = json_decode( $user );
+		$block->user = $user;
 		$block->shots = $shots->shots;
 
 		echo $block->fetch( $new_theme );
