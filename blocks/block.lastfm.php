@@ -38,7 +38,7 @@ if (! isset( $content->user ) ) { echo "<!--- Ignore Me: This is a fudge cos I h
           <a href="<?php echo $track->url; ?>"><?php echo $track->artist->text; ?> - <?php echo $track->name; ?></a>
         </p>
         <p class="track-date">
-          <?php if ( $track->date ) :
+          <?php if ( isset( $track->date ) ) :
 			$date = HabariDateTime::date_create( $track->date->uts );
 			echo $date->friendly(1);
 		  else:
