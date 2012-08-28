@@ -450,19 +450,6 @@ class Syte extends Plugin
 	{
 		$form->append( 'text', 'url', $block, _t( 'Last.fm URL', 'syte' ) );
 	}
-	
-	/**
-	 * Add a configuration option to set keywords
-	 */
-	public function filter_admin_option_items( $option_items )
-	{
-		$option_items[_t( 'Name & Tagline' )]['keywords'] = array(
-				'label' => _t( 'Site Keywords' ),
-				'type' => 'text',
-				'helptext' => _t( 'Comma separated list of default site keywords.' ),
-				);
-		return $option_items;
-	}
 		
 	/**
 	 * Gets a specific block and a corresponding theme object
